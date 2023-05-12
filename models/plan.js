@@ -23,16 +23,5 @@ const PlanSchema = new Schema({
 //     }
 // });
 
-PlanSchema.post("findOneAndDelete", async function (doc) {
-    if (doc) {
-        for (let dayPlan of doc.dayPlans) {
-            await DayPlan.findByIdAndDelete({
-                _id: {
-                    $in: dayPlan,
-                },
-            });
-        }
-    }
-});
 
 module.exports = mongoose.model("Plan", PlanSchema);

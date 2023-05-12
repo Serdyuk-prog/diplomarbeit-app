@@ -167,8 +167,52 @@ app.post(
     })
 );
 
+const activityLevels = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    very: 1.725,
+    extra: 1.9,
+};
+
+const goals = {
+    loss: {p: 0.3, f: 0.3, c: 0.4},
+    gain: {p: 0.3, f: 0.2, c: 0.5},
+    training: {p: 0.2, f: 0.2, c: 0.6},
+    maintenance: {p: 0.25, f: 0.25, c: 0.5},
+}
+
 //calculate and save dailyMR
-// TODO
+app.post(
+    "/api/dailymr",
+    catchAsync(async (req, res) => {
+        const { gender, weight, height, age, activity, goal } = req.body;
+        let BMR =
+            447.6 +
+            9.2 * parseInt(weight) +
+            4.8 * parseInt(height) -
+            5.7 * parseInt(age);
+        if (gender == "m") {
+            BMR =
+                88.36 +
+                13.4 * parseInt(weight) +
+                4.8 * parseInt(height) -
+                5.7 * parseInt(age);
+        }
+        const TDEE = BMR * activityLevels[activity];
+        const ratio = goals[goal];
+        const dailyMR = new DailyMR({
+            calories: TDEE,
+            protein: TDEE * ratio["p"] / 4,
+            fats: TDEE * ratio["f"] / 9,
+            carbs: TDEE * ratio["c"] / 4,
+        });
+        await DailyMR.deleteMany({});
+        await dailyMR.save();
+        res.send(dailyMR);
+    })
+);
+
 
 // edit food item data (needs testing)
 app.put(
@@ -217,8 +261,12 @@ app.delete(
     "/api/plan",
     catchAsync(async (req, res) => {
         const { plan_id } = req.body;
+        const plan = await Plan.findById(plan_id);
+        for (let dayPlan of plan.dayPlans) {
+            await DayPlan.findByIdAndDelete(dayPlan);
+        }
         await Plan.findByIdAndDelete(plan_id);
-        res.send(200);
+        res.sendStatus(200);
     })
 );
 
@@ -230,7 +278,7 @@ app.delete(
         const meal = await Meal.findById(meal_id);
         await meal.dishes.pull({ _id: food_id });
         await meal.save();
-        res.send(200);
+        res.sendStatus(200);
     })
 );
 
@@ -240,7 +288,7 @@ app.delete(
     catchAsync(async (req, res) => {
         const { meal_id } = req.body;
         await Meal.findByIdAndDelete(meal_id);
-        res.send(200);
+        res.sendStatus(200);
     })
 );
 
@@ -250,7 +298,7 @@ app.delete(
     catchAsync(async (req, res) => {
         const { food_id } = req.body;
         await FoodItem.findByIdAndDelete(food_id);
-        res.send(200);
+        res.sendStatus(200);
     })
 );
 
@@ -260,11 +308,18 @@ app.delete(
     catchAsync(async (req, res) => {
         const { recipe_id } = req.body;
         await Recipe.findByIdAndDelete(recipe_id);
-        res.send(200);
+        res.sendStatus(200);
     })
 );
 
 // delete dailyMR
+app.delete(
+    "/api/dailymr",
+    catchAsync(async (req, res) => {
+        await DailyMR.deleteMany({});
+        res.sendStatus(200);
+    })
+);
 
 app.all("*", (req, res, next) => {
     next(new ExpressError("Page Not Found!", 404));
@@ -273,7 +328,6 @@ app.all("*", (req, res, next) => {
 app.use((err, req, res, next) => {
     if (!err.message) err.message = "Something went wrong!";
     if (!err.status) err.status = 500;
-    const { status } = err;
     res.send(err);
 });
 

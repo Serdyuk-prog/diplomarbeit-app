@@ -12,9 +12,7 @@ const DayPlanSchema = new Schema({
     ],
 });
 
-DayPlanSchema.post("remove", async function (doc) {
-    console.log("remove middleware called");
-    console.log(doc);
+DayPlanSchema.post("findOneAndDelete", async function (doc) {
     if (doc) {
         await Meal.deleteMany({
             _id: {
