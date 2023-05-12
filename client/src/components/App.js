@@ -1,10 +1,14 @@
-import logo from "./logo.svg";
-import "./App.css";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import AllPlans from "./pages/AllPlans";
+import FoodItems from "./pages/FoodItems";
+import Plan from "./pages/Plan";
+import Requirements from "./pages/Requirements";
+import Layout from "./layout/Layout";
 
 function App() {
-    const [recipes, setRecipes] = useState([{}]);
+    // const [recipes, setRecipes] = useState([{}]);
 
     // useEffect(() => {
     //     axios
@@ -36,7 +40,14 @@ function App() {
         //   </header>
         // </div>
         // <div>{recipes[0].name}</div>
-        <div></div>
+        <Layout>
+            <Routes>
+                <Route path="/" element={<AllPlans />} />
+                <Route path="/plan/:id" element={<Plan />} />
+                <Route path="/requirements" element={<Requirements />} />
+                <Route path="/foods" element={<FoodItems />} />
+            </Routes>
+        </Layout>
     );
 }
 
