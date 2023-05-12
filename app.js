@@ -11,6 +11,7 @@ const Meal = require("./models/meal");
 const DailyMR = require("./models/dailyMR");
 const FoodItem = require("./models/foodItem");
 const Recipe = require("./models/recipe");
+const dailyMR = require("./models/dailyMR");
 
 mongoose
     .connect("mongodb://localhost:27017/diplomarbeit")
@@ -78,6 +79,55 @@ app.get(
     catchAsync(async (req, res) => {
         const dailymr = await DailyMR.findOne({});
         res.send(dailymr);
+    })
+);
+
+// function getFit(dailyMR, nutritionSum) {
+//     const currRatio = {
+//         p: (nutritionSum.protein * 4) / nutritionSum,
+//     };
+// }
+
+// get recommendations
+// to do
+app.get(
+    "/api/recommendations/:id",
+    catchAsync(async (req, res) => {
+        let result = [];
+        const dayPlan = await DayPlan.findById(req.params.id).populate({
+            path: "meals",
+            populate: {
+                path: "dishes",
+            },
+        });
+        let nutritionSum = {
+            calories: 0,
+            protein: 0,
+            fats: 0,
+            carbs: 0,
+        };
+        for (let meal of dayPlan.meals) {
+            for (let food of meal.dishes) {
+                const ratio = parseInt(food.servingSize) / 100;
+                nutritionSum.calories += parseInt(food.calories) * ratio;
+                nutritionSum.protein += parseInt(food.protein) * ratio;
+                nutritionSum.fats += parseInt(food.fats) * ratio;
+                nutritionSum.carbs += parseInt(food.carbs) * ratio;
+            }
+        }
+        const dailyMR = await dailyMR.findOne({});
+        if (dailyMR.calories > nutritionSum.calories) {
+            for (let foodItem of await FoodItem.find({})) {
+                correctedMR = {
+                    calories: 0,
+                    protein: 0,
+                    fats: 0,
+                    carbs: 0,
+                };
+                // getFit();
+            }
+        }
+        res.send(nutritionSum);
     })
 );
 
@@ -176,11 +226,11 @@ const activityLevels = {
 };
 
 const goals = {
-    loss: {p: 0.3, f: 0.3, c: 0.4},
-    gain: {p: 0.3, f: 0.2, c: 0.5},
-    training: {p: 0.2, f: 0.2, c: 0.6},
-    maintenance: {p: 0.25, f: 0.25, c: 0.5},
-}
+    loss: { p: 0.3, f: 0.3, c: 0.4 },
+    gain: { p: 0.3, f: 0.2, c: 0.5 },
+    training: { p: 0.2, f: 0.2, c: 0.6 },
+    maintenance: { p: 0.25, f: 0.25, c: 0.5 },
+};
 
 //calculate and save dailyMR
 app.post(
@@ -203,16 +253,15 @@ app.post(
         const ratio = goals[goal];
         const dailyMR = new DailyMR({
             calories: TDEE,
-            protein: TDEE * ratio["p"] / 4,
-            fats: TDEE * ratio["f"] / 9,
-            carbs: TDEE * ratio["c"] / 4,
+            protein: (TDEE * ratio["p"]) / 4,
+            fats: (TDEE * ratio["f"]) / 9,
+            carbs: (TDEE * ratio["c"]) / 4,
         });
         await DailyMR.deleteMany({});
         await dailyMR.save();
         res.send(dailyMR);
     })
 );
-
 
 // edit food item data (needs testing)
 app.put(
