@@ -78,7 +78,7 @@ app.get(
     "/api/dailymr",
     catchAsync(async (req, res) => {
         const dailymr = await DailyMR.findOne({});
-        res.send(dailymr);
+        res.send(dailymr ?? {});
     })
 );
 
@@ -237,6 +237,7 @@ app.post(
     "/api/dailymr",
     catchAsync(async (req, res) => {
         const { gender, weight, height, age, activity, goal } = req.body;
+        console.log(req);
         let BMR =
             447.6 +
             9.2 * parseInt(weight) +
@@ -252,10 +253,10 @@ app.post(
         const TDEE = BMR * activityLevels[activity];
         const ratio = goals[goal];
         const dailyMR = new DailyMR({
-            calories: TDEE,
-            protein: (TDEE * ratio["p"]) / 4,
-            fats: (TDEE * ratio["f"]) / 9,
-            carbs: (TDEE * ratio["c"]) / 4,
+            calories: Math.round(TDEE),
+            protein: Math.round((TDEE * ratio["p"]) / 4),
+            fats: Math.round((TDEE * ratio["f"]) / 9),
+            carbs: Math.round((TDEE * ratio["c"]) / 4),
         });
         await DailyMR.deleteMany({});
         await dailyMR.save();
