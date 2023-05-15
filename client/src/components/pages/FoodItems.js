@@ -5,6 +5,10 @@ import "./foodItems.css";
 
 import FoodInfoModal from "../food/FoodInfoModal";
 import NewFoodModal from "../food/NewFoodModal";
+import RecipeModal from "../food/RecipeModal";
+import AddRecipeModal from "../food/AddRecipeModal";
+import EditFoodModal from "../food/EditFoodModal";
+import EditRecipeModal from "../food/EditRecipeModal";
 
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -38,11 +42,18 @@ function FoodItems() {
     const handleCloseRecipe = () => setShowRecipe(false);
     const handleShowRecipe = () => setShowRecipe(true);
 
+    const [showAddRecipe, setShowAddRecipe] = useState(false);
+    const handleCloseAddRecipe = () => setShowAddRecipe(false);
+    const handleShowAddRecipe = () => setShowAddRecipe(true);
+
+    const [showEditRecipe, setShowEditRecipe] = useState(false);
+    const handleCloseEditRecipe = () => setShowEditRecipe(false);
+    const handleShowEditRecipe = () => setShowEditRecipe(true);
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
-        console.log(data);
         axios
             .post("/api/food-item", data, {
                 headers: {
@@ -56,6 +67,142 @@ function FoodItems() {
             .catch((err) => {
                 console.log(err);
                 handleCloseNew();
+            });
+    };
+
+    const handleSubmitRecipe = (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        axios
+            .post(
+                "/api/add-recipe",
+                {
+                    food_id: selectedFood._id,
+                    ingredients: data.ingredients,
+                    preparationTime: data.preparationTime,
+                    instructions: data.instructions,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                }
+            )
+            .then((response) => {
+                setFoods([response.data]);
+                handleCloseAddRecipe();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleCloseAddRecipe();
+            });
+    };
+
+    const handleSubmitEditFood = (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        const { name, servingSize, calories, protein, fats, carbs } = data;
+        axios
+            .put(
+                "/api/food-item",
+                {
+                    food_id: selectedFood._id,
+                    name,
+                    servingSize,
+                    calories,
+                    protein,
+                    fats,
+                    carbs,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                }
+            )
+            .then((response) => {
+                setFoods([response.data]);
+                handleCloseEdit();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleCloseEdit();
+            });
+    };
+
+    // handle EDit recipe
+    const handleSubmitEditRecipe = (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        const { ingredients, preparationTime, instructions } = data;
+        axios
+            .put(
+                "/api/recipe",
+                {
+                    recipe_id: selectedFood.recipe._id,
+                    ingredients,
+                    preparationTime,
+                    instructions,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                }
+            )
+            .then((response) => {
+                setFoods([response.data]);
+                handleCloseEditRecipe();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleCloseEditRecipe();
+            });
+    };
+
+    // handle delete recipe
+    const handleDeleteRecipe = () => {
+        console.log(selectedFood.recipe._id);
+        axios
+            .delete("/api/recipe", {
+                data: {
+                    recipe_id: selectedFood.recipe._id,
+                },
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            })
+            .then((response) => {
+                setFoods([]);
+                handleCloseRecipe();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleCloseRecipe();
+            });
+    };
+
+    // handle delete food
+    const handleDeleteFood = () => {
+        axios
+            .delete("/api/food-item", {
+                data: {
+                    food_id: selectedFood._id,
+                },
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            })
+            .then((response) => {
+                setFoods([]);
+                handleCloseInfo();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleCloseInfo();
             });
     };
 
@@ -104,12 +251,26 @@ function FoodItems() {
                                     <div className="d-flex justify-content-between">
                                         Калории: {food.calories}
                                         {food.recipe && (
-                                            <Button variant="outline-primary">
+                                            <Button
+                                                variant="outline-primary"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedFood(food);
+                                                    handleShowRecipe();
+                                                }}
+                                            >
                                                 Рецепт
                                             </Button>
                                         )}
                                         {!food.recipe && (
-                                            <Button variant="outline-danger">
+                                            <Button
+                                                variant="outline-danger"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedFood(food);
+                                                    handleShowAddRecipe();
+                                                }}
+                                            >
                                                 Добавить рецепт
                                             </Button>
                                         )}
@@ -124,11 +285,38 @@ function FoodItems() {
                 show={showInfo}
                 handleClose={handleCloseInfo}
                 food={selectedFood}
+                handleEdit={handleShowEdit}
+                handleDelete={handleDeleteFood}
             />
             <NewFoodModal
                 show={showNew}
                 handleClose={handleCloseNew}
                 handleSubmit={handleSubmit}
+            />
+            <RecipeModal
+                show={showRecipe}
+                handleClose={handleCloseRecipe}
+                food={selectedFood}
+                handleEdit={handleShowEditRecipe}
+                handleDelete={handleDeleteRecipe}
+            />
+            <AddRecipeModal
+                show={showAddRecipe}
+                handleClose={handleCloseAddRecipe}
+                food={selectedFood}
+                handleSubmit={handleSubmitRecipe}
+            />
+            <EditFoodModal
+                show={showEdit}
+                handleClose={handleCloseEdit}
+                food={selectedFood}
+                handleSubmit={handleSubmitEditFood}
+            />
+            <EditRecipeModal
+                show={showEditRecipe}
+                handleClose={handleCloseEditRecipe}
+                food={selectedFood}
+                handleSubmit={handleSubmitEditRecipe}
             />
         </>
     );

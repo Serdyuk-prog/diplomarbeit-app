@@ -63,13 +63,18 @@ function MRForm(props) {
                     <option value="maintenance">Поддержка текущего веса</option>
                 </Form.Select>
             </Form.Group>
-
-            <Button variant="secondary" onClick={props.handleClose}>
-                Close
-            </Button>
-            <Button variant="primary" type="submit">
-                Save Changes
-            </Button>
+            <div className="d-flex flex-row-reverse">
+                <Button
+                    variant="secondary"
+                    onClick={props.handleClose}
+                    className="ms-2"
+                >
+                    Закрыть
+                </Button>
+                <Button variant="primary" type="submit">
+                    Сохранить
+                </Button>
+            </div>
         </Form>
     );
 }

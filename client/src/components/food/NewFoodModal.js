@@ -40,13 +40,18 @@ function NewFoodModal(props) {
                         <Form.Label>Углеводы на 100 грамм</Form.Label>
                         <Form.Control required type="number" name="carbs" />
                     </Form.Group>
-
-                    <Button variant="secondary" onClick={handleClose}>
-                        Закрыть
-                    </Button>
-                    <Button variant="primary" type="submit">
-                        Сохранить
-                    </Button>
+                    <div className="d-flex flex-row-reverse">
+                        <Button
+                            variant="secondary"
+                            onClick={handleClose}
+                            className="ms-2"
+                        >
+                            Закрыть
+                        </Button>
+                        <Button variant="primary" type="submit">
+                            Сохранить
+                        </Button>
+                    </div>
                 </Form>
             </Modal.Body>
         </Modal>
