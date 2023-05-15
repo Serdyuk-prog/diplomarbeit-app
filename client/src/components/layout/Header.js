@@ -9,14 +9,14 @@ function Header() {
         <Navbar bg="dark" variant="dark">
             <Container>
                 <Link to="/" className="navbar-brand">
-                    Diet Plans
+                    Планы питания
                 </Link>
                 <Nav className="me-auto">
                     <Link to="/requirements" className="nav-link">
-                        Requirements
+                    Потребности
                     </Link>
                     <Link to="/foods" className="nav-link">
-                        Food Items
+                        Блюда
                     </Link>
                 </Nav>
             </Container>

@@ -57,7 +57,7 @@ app.get(
 app.get(
     "/api/food-items",
     catchAsync(async (req, res) => {
-        const food_items = await FoodItem.find({});
+        const food_items = await FoodItem.find({}).populate("recipe");
         res.send(food_items);
     })
 );
