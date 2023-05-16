@@ -73,8 +73,8 @@ function Requirements() {
                 {Object.keys(dailyMR).length === 0 && (
                     <Row md={2}>
                         <Alert key="warning" variant="warning">
-                            Daily macronutrient requirements wasn't calculated
-                            yet! Take a test!
+                            Суточная потребность в макроэлементах еще не
+                            рассчитана! Пройдите тест!
                         </Alert>
                     </Row>
                 )}

@@ -6,14 +6,14 @@ import { Link } from "react-router-dom";
 
 function Header() {
     return (
-        <Navbar bg="dark" variant="dark">
+        <Navbar bg="light" variant="light">
             <Container>
                 <Link to="/" className="navbar-brand">
                     Планы питания
                 </Link>
                 <Nav className="me-auto">
                     <Link to="/requirements" className="nav-link">
-                    Потребности
+                        Потребности
                     </Link>
                     <Link to="/foods" className="nav-link">
                         Блюда

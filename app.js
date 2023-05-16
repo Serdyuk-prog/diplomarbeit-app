@@ -46,6 +46,9 @@ app.get(
                 path: "meals",
                 populate: {
                     path: "dishes",
+                    populate: {
+                        path: "recipe",
+                    },
                 },
             },
         });
@@ -171,6 +174,7 @@ app.post(
     "/api/add-food",
     catchAsync(async (req, res) => {
         const { meal_id, food_id } = req.body;
+        console.log(req.body);
         const meal = await Meal.findById(meal_id);
         const foodItem = await FoodItem.findById(food_id);
         meal.dishes.push(foodItem);
@@ -303,6 +307,22 @@ app.put(
         });
         await recipe.save();
         res.send(await Recipe.findById(recipe_id));
+    })
+);
+
+// edit meal
+app.put(
+    "/api/meal",
+    catchAsync(async (req, res) => {
+        const { meal_id, name } = req.body;
+        const new_data = {
+            name: name,
+        };
+        const meal = await Meal.findByIdAndUpdate(meal_id, {
+            ...new_data,
+        });
+        await meal.save();
+        res.send(await Meal.findById(meal_id));
     })
 );
 

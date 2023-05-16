@@ -8,10 +8,12 @@ export function getNutritionSum(dayPlan) {
     for (let meal of dayPlan.meals) {
         for (let food of meal.dishes) {
             const ratio = parseInt(food.servingSize) / 100;
-            nutritionSum.calories += parseInt(food.calories) * ratio;
-            nutritionSum.protein += parseInt(food.protein) * ratio;
-            nutritionSum.fats += parseInt(food.fats) * ratio;
-            nutritionSum.carbs += parseInt(food.carbs) * ratio;
+            nutritionSum.calories += Math.round(
+                parseInt(food.calories) * ratio
+            );
+            nutritionSum.protein += Math.round(parseInt(food.protein) * ratio);
+            nutritionSum.fats += Math.round(parseInt(food.fats) * ratio);
+            nutritionSum.carbs += Math.round(parseInt(food.carbs) * ratio);
         }
     }
     return nutritionSum;

@@ -10,6 +10,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
 
 function AllPlans() {
     const [plans, setPlans] = useState([{}]);
@@ -19,6 +20,26 @@ function AllPlans() {
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        axios
+            .post("/api/plan", data, {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            })
+            .then((response) => {
+                setPlans([response.data]);
+                handleClose();
+            })
+            .catch((err) => {
+                console.log(err);
+                handleClose();
+            });
+    };
 
     useEffect(() => {
         axios
@@ -30,7 +51,7 @@ function AllPlans() {
                 }
             })
             .catch((err) => console.log(err));
-    }, []);
+    }, [plans]);
 
     if (isLoading) {
         return <Loader />;
@@ -63,19 +84,36 @@ function AllPlans() {
             </Container>
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Modal heading</Modal.Title>
+                    <Modal.Title>Новый план питания</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Woohoo, you are reading this text in a modal!
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group className="mb-3" controlId="formName">
+                            <Form.Label>Название</Form.Label>
+                            <Form.Control required type="text" name="name" />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="formPeriod">
+                            <Form.Label>Количество дней</Form.Label>
+                            <Form.Control
+                                required
+                                type="number"
+                                name="period"
+                            />
+                        </Form.Group>
+                        <div className="d-flex flex-row-reverse">
+                            <Button
+                                variant="secondary"
+                                onClick={handleClose}
+                                className="ms-2"
+                            >
+                                Закрыть
+                            </Button>
+                            <Button variant="primary" type="submit">
+                                Сохранить
+                            </Button>
+                        </div>
+                    </Form>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleClose}>
-                        Save Changes
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </>
     );
